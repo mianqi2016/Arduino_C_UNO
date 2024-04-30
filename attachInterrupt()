@@ -1,0 +1,62 @@
+// IR module with hollow wheel rotating
+
+const byte interruptPin = 2;
+volatile byte state = LOW;
+unsigned int pulse = 0;
+
+bool flag_IR = true;
+volatile unsigned int time_IR = 0;
+unsigned int duration_debounce = 0;
+
+bool flag_Print = true;
+unsigned int time_Print = 0;
+unsigned int duration_Print = 0;
+
+#define PERIOD_DEBOUNCE 20  // 20ms
+#define PERIOD_PRINT 500  // 500ms
+
+void setup() {
+  pinMode(interruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), count, CHANGE);
+  Serial.begin(9600);
+}
+
+void loop() {
+  if(flag_Print == false) {
+    flag_Print = true;
+    time_Print = millis();
+  } else {
+      duration_Print = millis() - time_Print;
+      if(duration_Print >= PERIOD_PRINT) {
+          flag_Print = false;
+          time_Print = millis();
+      } else {
+          ;
+        }
+  }
+
+  Serial.println(pulse);
+}
+
+void count() {
+  // do {
+  //   state = digitalRead(interruptPin);
+  // } while (state != digitalRead(interruptPin));
+  // ++pulse;
+
+  if(flag_IR == false) {
+    state = digitalRead(interruptPin);
+    //time_IR = microseonds();
+    time_IR = millis();
+    flag_IR = true;
+  } else {
+      duration_debounce = millis() - time_IR;
+      if(duration_debounce >= PERIOD_DEBOUNCE) {
+          ++pulse;
+          flag_IR = false;
+          time_IR = millis();
+      } else {
+          ;
+        }
+  }
+}
