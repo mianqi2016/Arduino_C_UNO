@@ -1,1 +1,72 @@
+/*
+* 这个程序适用于 Arduino UNO
+* 作用对象是：1 个蜂鸣器 + 2 个按钮开关（每个开关接一个 20KΩ 的上拉电阻器） + 3 个 LED 灯（每个串联一个限流电阻器）
+* 过程是：
+* 按一个键，蓝灯亮，再按一下，蓝灯灭；
+* 按另一个键，绿灯亮，再按一下，绿灯灭；
+* 两个键同时按下去，红灯亮，蜂鸣器响。
+* 上述过程的实现靠的是两个功能：按键状态轮询与按键动作消抖
+*/
+
+#define ledBlue 7
+#define ledGreen 6
+#define ledRed 8
+#define Beep 9
+#define sensorBlue 5
+#define sensorGreen 4
+#define OPERATIONERROR 1
+#define durationDebounce 50
+
+long timeDebounceBlue = 0;
+long timeDebounceGreen = 0;
+long timeDebounceRed = 0;
+boolean flag = false;
+
+void setup() {
+    pinMode(ledBlue, OUTPUT);
+    pinMode(ledGreen, OUTPUT);
+    pinMode(ledRed, OUTPUT);
+    pinMode(Beep, OUTPUT);
+    pinMode(sensorBlue, INPUT_PULLUP);
+    pinMode(sensorGreen, INPUT_PULLUP);
+}
+
+void loop() {
+if((digitalRead(sensorBlue) == LOW) && (digitalRead(sensorGreen) == LOW)){
+    digitalWrite(ledRed, HIGH);
+    digitalWrite(Beep, HIGH);
+    digitalWrite(ledBlue, LOW);
+    digitalWrite(ledGreen, LOW);
+    flag = true;
+    return OPERATIONERROR;
+} else if((digitalRead(sensorBlue) == HIGH) && (digitalRead(sensorGreen) == HIGH)){
+    if(flag){
+    digitalWrite(ledBlue, LOW);
+    digitalWrite(ledGreen, LOW);
+    flag = !flag;
+    };
+} else if(digitalRead(sensorBlue) == LOW) {
+          if((millis() - timeDebounceBlue) >= durationDebounce){
+          digitalWrite(ledBlue, HIGH);
+          digitalWrite(ledGreen, LOW);
+          digitalWrite(ledRed, LOW);
+          digitalWrite(Beep, LOW);
+          timeDebounceBlue = millis();
+          }else{
+              ;
+            }
+          } else if(digitalRead(sensorGreen) == LOW){
+              if((millis() - timeDebounceGreen) >= durationDebounce){
+                  digitalWrite(ledGreen, HIGH);
+                  digitalWrite(ledBlue, LOW);
+                  digitalWrite(ledRed, LOW);
+                  digitalWrite(Beep, LOW);
+                  timeDebounceGreen = millis();
+              } else{
+                  ;
+                }
+            }
+}
+
+
 
